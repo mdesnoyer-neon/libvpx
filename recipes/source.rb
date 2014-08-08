@@ -22,7 +22,7 @@ file "#{creates_libvpx}" do
     subscribes :delete, "bash[compile_yasm]", :immediately
 end
 
-git "#{Chef::Config[:file_cache_path]}/libvpx" do
+git node['libvpx']['build_dir'] do
     repository node['libvpx']['git_repository']
     reference node['libvpx']['git_revision']
     action :sync
@@ -31,7 +31,7 @@ end
 
 # Write the flags used to compile the application to Disk. If the flags
 # do not match those that are in the compiled_flags attribute - we recompile
-template "#{Chef::Config[:file_cache_path]}/libvpx-compiled_with_flags" do
+template "#{node['libvpx']['build_dir']}/libvpx-compiled_with_flags" do
     source "compiled_with_flags.erb"
     owner "root"
     group "root"
@@ -43,7 +43,7 @@ template "#{Chef::Config[:file_cache_path]}/libvpx-compiled_with_flags" do
 end
 
 bash "compile_libvpx" do
-    cwd "#{Chef::Config[:file_cache_path]}/libvpx"
+    cwd node['libvpx']['build_dir']
     code <<-EOH
         ./configure --prefix=#{node['libvpx']['prefix']} #{node['libvpx']['compile_flags'].join(' ')}
         make clean && make && make install
